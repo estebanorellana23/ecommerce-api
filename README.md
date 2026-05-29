@@ -31,6 +31,7 @@ app/
 ├── notifications/   # Canales de notificación — patrón Factory
 ├── observers/       # Eventos de inventario — patrón Observer
 ├── auth/            # Autenticación JWT + roles (MH-05): security, service, deps
+├── static/          # Panel de administración web (frontend mínimo)
 ├── infrastructure/  # Caché + modelos SQLAlchemy (ruta Postgres)
 └── api/             # FastAPI: routers, schemas y contenedor de dependencias
 ```
@@ -63,6 +64,14 @@ uvicorn app.main:app --reload
 # 3. Abrir la documentación interactiva
 #    http://localhost:8000/docs
 ```
+
+### Panel de administración web
+
+Hay un frontend mínimo (HTML/CSS/JS, sin build) servido por la propia API en
+**http://localhost:8000/ui/**. Permite iniciar sesión, gestionar el catálogo
+(crear/editar/eliminar productos con control por rol) y operar el inventario
+(consulta/ajuste de stock y reporte de stock bajo). Login demo:
+`admin@empresa.gt` / `Admin123!`.
 
 ### Backend de base de datos
 

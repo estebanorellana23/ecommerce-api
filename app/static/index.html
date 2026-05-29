@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Commerce API — Panel de Administración</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Vista de login -->
+  <main id="login-view" class="login-wrap">
+    <form id="login-form" class="card login-card">
+      <h1>Panel de Administración</h1>
+      <p class="muted">E-Commerce API · Análisis de Sistemas I</p>
+      <label>Correo
+        <input type="email" id="email" value="admin@empresa.gt" required />
+      </label>
+      <label>Contraseña
+        <input type="password" id="password" value="Admin123!" required />
+      </label>
+      <button type="submit">Iniciar sesión</button>
+      <p id="login-error" class="error hidden"></p>
+      <p class="muted small">Demo: admin@empresa.gt / Admin123!</p>
+    </form>
+  </main>
+
+  <!-- Vista principal -->
+  <div id="app-view" class="hidden">
+    <header class="topbar">
+      <strong>E-Commerce Admin</strong>
+      <nav>
+        <button class="tab active" data-tab="products">Productos</button>
+        <button class="tab" data-tab="inventory">Inventario</button>
+      </nav>
+      <span class="spacer"></span>
+      <span id="user-badge" class="badge"></span>
+      <button id="logout" class="ghost">Salir</button>
+    </header>
+
+    <main class="content">
+      <!-- Tab Productos -->
+      <section id="tab-products" class="tab-panel">
+        <div class="row-between">
+          <h2>Catálogo</h2>
+          <button id="new-product">+ Nuevo producto</button>
+        </div>
+        <table class="data">
+          <thead>
+            <tr><th>ID</th><th>SKU</th><th>Nombre</th><th>Precio (Q)</th><th>Cat.</th><th>Activo</th><th></th></tr>
+          </thead>
+          <tbody id="products-body"></tbody>
+        </table>
+      </section>
+
+      <!-- Tab Inventario -->
+      <section id="tab-inventory" class="tab-panel hidden">
+        <h2>Inventario</h2>
+        <div class="grid2">
+          <div class="card">
+            <h3>Consultar / ajustar stock</h3>
+            <label>Product ID <input type="number" id="inv-pid" value="1" min="1" /></label>
+            <button id="inv-get">Consultar</button>
+            <p id="inv-result" class="muted"></p>
+            <hr />
+            <label>Ajuste (delta) <input type="number" id="inv-delta" value="10" /></label>
+            <button id="inv-adjust">Aplicar ajuste</button>
+          </div>
+          <div class="card">
+            <h3>Reporte de stock bajo (SH-01)</h3>
+            <label>Umbral <input type="number" id="low-threshold" value="10" min="0" /></label>
+            <button id="low-report">Generar reporte</button>
+            <table class="data small-table">
+              <thead><tr><th>Product ID</th><th>Disponible</th></tr></thead>
+              <tbody id="low-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal producto -->
+  <div id="modal" class="modal hidden">
+    <form id="product-form" class="card modal-card">
+      <h3 id="modal-title">Nuevo producto</h3>
+      <input type="hidden" id="p-id" />
+      <label>SKU <input id="p-sku" required /></label>
+      <label>Nombre <input id="p-name" required /></label>
+      <label>Descripción <input id="p-desc" /></label>
+      <div class="grid2">
+        <label>Precio <input type="number" step="0.01" id="p-price" required /></label>
+        <label>Categoría ID <input type="number" id="p-cat" value="1" required /></label>
+      </div>
+      <div class="grid2">
+        <label>Punto de reorden <input type="number" id="p-reorder" value="0" /></label>
+        <label class="check">Activo <input type="checkbox" id="p-active" checked /></label>
+      </div>
+      <p id="modal-error" class="error hidden"></p>
+      <div class="row-end">
+        <button type="button" id="modal-cancel" class="ghost">Cancelar</button>
+        <button type="submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

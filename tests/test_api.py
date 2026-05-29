@@ -78,3 +78,9 @@ def test_place_order_flow():
 def test_order_not_found():
     r = client.get("/orders/99999")
     assert r.status_code == 404
+
+
+def test_admin_ui_se_sirve():
+    r = client.get("/ui/")
+    assert r.status_code == 200
+    assert "<html" in r.text.lower()

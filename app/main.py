@@ -6,8 +6,10 @@ Proyecto Final — Análisis de Sistemas I, Universidad Mariano Gálvez.
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.api.routers import admin, auth, catalog, health, inventory, orders
 from app.config import settings
@@ -38,4 +40,10 @@ def root():
         "service": settings.app_name,
         "version": settings.version,
         "docs": "/docs",
+        "admin_ui": "/ui/",
     }
+
+
+# Panel de administración web (frontend mínimo, MH-05). Sirve los estáticos.
+_STATIC_DIR = Path(__file__).parent / "static"
+app.mount("/ui", StaticFiles(directory=_STATIC_DIR, html=True), name="ui")
