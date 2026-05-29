@@ -30,6 +30,7 @@ app/
 ├── payments/        # Pasarelas de pago — patrón Factory + OCP
 ├── notifications/   # Canales de notificación — patrón Factory
 ├── observers/       # Eventos de inventario — patrón Observer
+├── auth/            # Autenticación JWT + roles (MH-05): security, service, deps
 ├── infrastructure/  # Caché + modelos SQLAlchemy (ruta Postgres)
 └── api/             # FastAPI: routers, schemas y contenedor de dependencias
 ```
@@ -116,18 +117,44 @@ lo que corren sin levantar base de datos.
 
 ## Endpoints principales
 
-| Método | Ruta | Requerimiento |
-|--------|------|---------------|
-| GET | `/catalog?page=&size=` | MH-03 (paginación + caché) |
-| GET | `/catalog/search?q=` | MH-04 (búsqueda) |
-| GET | `/catalog/{id}` | — |
-| GET | `/inventory/{id}` | — |
-| POST | `/inventory/sync` | MH-01 / MH-02 (sync ERP con errores) |
-| POST | `/inventory/{id}/adjust` | ajuste manual |
-| GET | `/inventory/reports/low-stock` | SH-01 (alertas) |
-| GET | `/inventory/reports/movements/{id}` | SH-04 (historial) |
-| POST | `/orders` | checkout |
-| POST | `/orders/{id}/cancel` | cancelación + reposición |
+| Método | Ruta | Requerimiento | Rol requerido |
+|--------|------|---------------|---------------|
+| POST | `/auth/login` | MH-05 (login OAuth2 → JWT) | público |
+| GET | `/auth/me` | MH-05 | autenticado |
+| GET | `/catalog?page=&size=` | MH-03 (paginación + caché) | público |
+| GET | `/catalog/search?q=` | MH-04 (búsqueda) | público |
+| GET | `/catalog/{id}` | — | público |
+| GET | `/inventory/{id}` | — | público |
+| POST | `/inventory/sync` | MH-01 / MH-02 (sync ERP con errores) | inventory / admin |
+| POST | `/inventory/{id}/adjust` | ajuste manual | inventory / admin |
+| GET | `/inventory/reports/low-stock` | SH-01 (alertas) | inventory / purchasing / admin |
+| GET | `/inventory/reports/movements/{id}` | SH-04 (historial) | inventory / auditor / purchasing / admin |
+| POST | `/orders` | checkout | público (cliente) |
+| POST | `/orders/{id}/cancel` | cancelación + reposición | público (cliente) |
+| POST/PUT | `/admin/products` | gestión de catálogo | marketing / admin |
+| DELETE | `/admin/products/{id}` | eliminar producto | admin |
+
+### Autenticación (MH-05)
+
+La API usa **JWT** (OAuth2 password flow) con **roles**: `admin`, `inventory`,
+`marketing`, `purchasing`, `auditor`. Las contraseñas se guardan con **bcrypt
+(cost 12)**. Al iniciar se siembra un usuario admin demo
+(`admin@empresa.gt` / `Admin123!`, configurable por variables de entorno).
+
+```bash
+# 1. Obtener token
+curl -s -X POST localhost:8000/auth/login \
+  -d "username=admin@empresa.gt&password=Admin123!"
+
+# 2. Usar el token en endpoints protegidos
+curl -s -X POST localhost:8000/inventory/sync \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '[{"product_id":1,"available":100}]'
+```
+
+En `/docs` usa el botón **Authorize** (esquina superior derecha) para autenticarte
+y probar los endpoints protegidos directamente.
 
 ---
 

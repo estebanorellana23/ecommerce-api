@@ -9,7 +9,7 @@ import logging
 
 from fastapi import FastAPI
 
-from app.api.routers import catalog, health, inventory, orders
+from app.api.routers import admin, auth, catalog, health, inventory, orders
 from app.config import settings
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
@@ -25,9 +25,11 @@ app = FastAPI(
 )
 
 app.include_router(health.router)
+app.include_router(auth.router)
 app.include_router(catalog.router)
 app.include_router(inventory.router)
 app.include_router(orders.router)
+app.include_router(admin.router)
 
 
 @app.get("/", tags=["root"])

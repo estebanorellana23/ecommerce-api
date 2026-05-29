@@ -56,6 +56,17 @@ CREATE TABLE inventory_movements (
     created_at      TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE users (
+    id              SERIAL PRIMARY KEY,
+    email           VARCHAR(200) NOT NULL UNIQUE,
+    name            VARCHAR(200) NOT NULL,
+    role            VARCHAR(20) NOT NULL
+                    CHECK (role IN ('admin','inventory','marketing','purchasing','auditor')),
+    password_hash   VARCHAR(256) NOT NULL,
+    is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at      TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE customers (
     id              SERIAL PRIMARY KEY,
     email           VARCHAR(200) NOT NULL UNIQUE,

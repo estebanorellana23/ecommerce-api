@@ -9,7 +9,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from datetime import datetime
 
-from app.domain.entities import Customer, Order, Product, StockRecord
+from app.domain.entities import Customer, Order, Product, StockRecord, User
 from app.domain.value_objects import CatalogPage, SearchFilters
 
 
@@ -77,6 +77,16 @@ class ICustomerRepository(ABC):
 
     @abstractmethod
     def save(self, customer: Customer) -> Customer: ...
+
+
+class IUserRepository(ABC):
+    """Usuarios internos del panel de administración (MH-05)."""
+
+    @abstractmethod
+    def find_by_email(self, email: str) -> User | None: ...
+
+    @abstractmethod
+    def save(self, user: User) -> User: ...
 
 
 # --- Soporte para los Observers (SH-01 / SH-04 / MH-06) -------------------

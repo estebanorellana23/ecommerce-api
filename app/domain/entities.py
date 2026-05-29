@@ -10,9 +10,24 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 
+from app.auth.roles import Role
+
 
 def _now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+@dataclass
+class User:
+    """Usuario interno del panel de administración (MH-05)."""
+
+    email: str
+    name: str
+    role: Role
+    password_hash: str
+    id: int | None = None
+    is_active: bool = True
+    created_at: datetime = field(default_factory=_now)
 
 
 class OrderStatus(str, Enum):

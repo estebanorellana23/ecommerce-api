@@ -83,3 +83,29 @@ class MovementOut(BaseModel):
     action: str
     delta: int
     timestamp: str
+
+
+# --- Autenticación (MH-05) ---
+
+
+class TokenOut(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+class UserOut(BaseModel):
+    id: int
+    email: str
+    name: str
+    role: str
+    is_active: bool
+
+
+class ProductIn(BaseModel):
+    sku: str
+    name: str
+    price: Decimal = Field(gt=0)
+    category_id: int
+    description: str = ""
+    reorder_point: int = Field(default=0, ge=0)
+    is_active: bool = True

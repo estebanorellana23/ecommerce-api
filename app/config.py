@@ -23,6 +23,19 @@ class Settings:
             "PURCHASING_EMAILS", "compras@empresa.gt"
         ).split(",")
     )
+    # --- Autenticación y autorización (MH-05) ---
+    jwt_secret: str = field(
+        default_factory=lambda: os.getenv("JWT_SECRET", "dev-secret-cambiar-en-produccion")
+    )
+    jwt_algorithm: str = field(default_factory=lambda: os.getenv("JWT_ALGORITHM", "HS256"))
+    jwt_expire_minutes: int = int(os.getenv("JWT_EXPIRE_MINUTES", "60"))
+    # Credenciales del admin sembrado al iniciar (solo demo/desarrollo)
+    seed_admin_email: str = field(
+        default_factory=lambda: os.getenv("SEED_ADMIN_EMAIL", "admin@empresa.gt")
+    )
+    seed_admin_password: str = field(
+        default_factory=lambda: os.getenv("SEED_ADMIN_PASSWORD", "Admin123!")
+    )
 
 
 settings = Settings()

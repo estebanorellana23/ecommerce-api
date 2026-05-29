@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from app.domain.entities import Customer, Order, Product, StockRecord
+from app.domain.entities import Customer, Order, Product, StockRecord, User
 from app.domain.value_objects import CatalogPage, SearchFilters
 from app.repositories.interfaces import (
     AuditEntry,
@@ -18,6 +18,7 @@ from app.repositories.interfaces import (
     IOrderRepository,
     IProductRepository,
     IThresholdRepository,
+    IUserRepository,
     StockThreshold,
 )
 
@@ -164,3 +165,21 @@ class InMemoryAuditLogRepository(IAuditLogRepository):
         matching.sort(key=lambda e: e.timestamp, reverse=True)
         start = (page - 1) * size
         return matching[start : start + size]
+
+
+class InMemoryUserRepository(IUserRepository):
+    def __init__(self, users: list[User] | None = None):
+        self._store: dict[int, User] = {}
+        self._seq = 0
+        for u in users or []:
+            self.save(u)
+
+    def find_by_email(self, email: str) -> User | None:
+        return next((u for u in self._store.values() if u.email == email), None)
+
+    def save(self, user: User) -> User:
+        if user.id is None:
+            self._seq += 1
+            user.id = self._seq
+        self._store[user.id] = user
+        return user

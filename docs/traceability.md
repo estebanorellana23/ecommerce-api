@@ -8,6 +8,7 @@ Mapea cada requerimiento MoSCoW (nota 06) con la clase y el endpoint que lo impl
 | **MH-02** | Job de sync con manejo de errores y alertas | `InventoryService.sync_from_erp()` (try/except por item → `SyncResult`) | `POST /inventory/sync` |
 | **MH-03** | Carga de catálogo < 3s (caché + paginación) | `ProductService.get_catalog()` + `InMemoryCache` + `CatalogCacheObserver` | `GET /catalog?page=&size=` |
 | **MH-04** | Buscador full-text por nombre/SKU/descripción | `IProductReader.search()` + `SearchFilters` | `GET /catalog/search?q=` |
+| **MH-05** | Autenticación y autorización por roles | `AuthService` + JWT (`app/auth/`) + `require_roles()` | `POST /auth/login`, rutas `/inventory/*` y `/admin/*` protegidas |
 | **MH-06** | Logging de endpoints críticos | `InventoryAuditObserver` + logging | (todos) |
 | **SH-01** | Alertas de stock bajo configurables | `LowStockObserver` + `LowStockAlertService` + `NotificationFactory` | `GET /inventory/reports/low-stock` |
 | **SH-02** | Reporte de productos inmovilizados (+90 días) | `InventoryService.immobilized_report()` | `GET /inventory/reports/...` |

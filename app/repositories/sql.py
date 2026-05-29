@@ -14,7 +14,16 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.domain.entities import Customer, Order, OrderItem, OrderStatus, Product, StockRecord
+from app.auth.roles import Role
+from app.domain.entities import (
+    Customer,
+    Order,
+    OrderItem,
+    OrderStatus,
+    Product,
+    StockRecord,
+    User,
+)
 from app.domain.value_objects import CatalogPage, SearchFilters
 from app.infrastructure.db.models import (
     CustomerModel,
@@ -24,6 +33,7 @@ from app.infrastructure.db.models import (
     OrderModel,
     ProductModel,
     StockThresholdModel,
+    UserModel,
 )
 from app.repositories.interfaces import (
     AuditEntry,
@@ -33,6 +43,7 @@ from app.repositories.interfaces import (
     IOrderRepository,
     IProductRepository,
     IThresholdRepository,
+    IUserRepository,
     StockThreshold,
 )
 
@@ -406,3 +417,37 @@ class SqlAuditLogRepository(IAuditLogRepository):
                 )
                 for m in rows
             ]
+
+
+class SqlUserRepository(IUserRepository):
+    def __init__(self, session_factory: sessionmaker[Session]):
+        self._sf = session_factory
+
+    def find_by_email(self, email: str) -> User | None:
+        with self._sf() as s:
+            m = s.scalar(select(UserModel).where(UserModel.email == email))
+            if m is None:
+                return None
+            return User(
+                id=m.id,
+                email=m.email,
+                name=m.name,
+                role=Role(m.role),
+                password_hash=m.password_hash,
+                is_active=m.is_active,
+                created_at=m.created_at,
+            )
+
+    def save(self, user: User) -> User:
+        with self._sf() as s:
+            m = s.scalar(select(UserModel).where(UserModel.email == user.email))
+            if m is None:
+                m = UserModel(email=user.email)
+                s.add(m)
+            m.name = user.name
+            m.role = user.role.value
+            m.password_hash = user.password_hash
+            m.is_active = user.is_active
+            s.commit()
+            user.id = m.id
+            return user

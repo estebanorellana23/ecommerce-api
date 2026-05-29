@@ -9,8 +9,11 @@ from __future__ import annotations
 
 from decimal import Decimal
 
+from app.auth.roles import Role
+from app.auth.security import hash_password
+from app.auth.service import AuthService
 from app.config import settings
-from app.domain.entities import Customer, Product
+from app.domain.entities import Customer, Product, User
 from app.infrastructure.cache import InMemoryCache
 from app.notifications.handlers import NotificationConfig, NotificationFactory
 from app.observers.inventory_observers import (
@@ -28,6 +31,7 @@ from app.repositories.memory import (
     InMemoryOrderRepository,
     InMemoryProductRepository,
     InMemoryThresholdRepository,
+    InMemoryUserRepository,
 )
 from app.services.inventory_service import InventoryService
 from app.services.order_service import OrderService
@@ -74,6 +78,9 @@ class Container:
         self.inventory_subject.subscribe(InventoryAuditObserver(self.audit_log))
         self.inventory_subject.subscribe(CatalogCacheObserver(self.cache))
 
+        # --- Autenticación y autorización (MH-05) ---
+        self.auth_service = AuthService(self.users)
+
         # --- Pasarela de pago (Factory) ---
         self.payment_gateway = PaymentGatewayFactory.create(
             settings.payment_provider, PaymentConfig()
@@ -89,6 +96,19 @@ class Container:
         )
 
         self._seed_if_empty()
+        self._seed_admin()
+
+    def _seed_admin(self) -> None:
+        """Crea el usuario admin inicial si no existe (demo/desarrollo)."""
+        if self.users.find_by_email(settings.seed_admin_email) is None:
+            self.users.save(
+                User(
+                    email=settings.seed_admin_email,
+                    name="Administrador",
+                    role=Role.ADMIN,
+                    password_hash=hash_password(settings.seed_admin_password),
+                )
+            )
 
     def _wire_memory(self) -> None:
         self.products = InMemoryProductRepository()
@@ -97,6 +117,7 @@ class Container:
         self.customers = InMemoryCustomerRepository()
         self.thresholds = InMemoryThresholdRepository()
         self.audit_log = InMemoryAuditLogRepository()
+        self.users = InMemoryUserRepository()
 
     def _wire_sql(self) -> None:
         from app.infrastructure.db.session import get_sessionmaker, init_db
@@ -107,6 +128,7 @@ class Container:
             SqlOrderRepository,
             SqlProductRepository,
             SqlThresholdRepository,
+            SqlUserRepository,
         )
 
         init_db()  # crea las tablas si no existen
@@ -118,6 +140,7 @@ class Container:
         self.customers = SqlCustomerRepository(sf)
         self.thresholds = SqlThresholdRepository(sf)
         self.audit_log = SqlAuditLogRepository(sf)
+        self.users = SqlUserRepository(sf)
 
     @staticmethod
     def _seed_categories_sql(sf) -> None:

@@ -6,6 +6,15 @@ from app.main import app
 client = TestClient(app)
 
 
+def _admin_headers():
+    r = client.post(
+        "/auth/login",
+        data={"username": "admin@empresa.gt", "password": "Admin123!"},
+    )
+    assert r.status_code == 200
+    return {"Authorization": f"Bearer {r.json()['access_token']}"}
+
+
 def test_health():
     r = client.get("/health")
     assert r.status_code == 200
@@ -33,11 +42,20 @@ def test_get_stock():
 
 
 def test_sync_from_erp():
-    r = client.post("/inventory/sync", json=[{"product_id": 1, "available": 100}])
+    r = client.post(
+        "/inventory/sync",
+        json=[{"product_id": 1, "available": 100}],
+        headers=_admin_headers(),
+    )
     assert r.status_code == 200
     body = r.json()
     assert body["succeeded"] == 1
     assert body["failed"] == 0
+
+
+def test_sync_sin_token_es_401():
+    r = client.post("/inventory/sync", json=[{"product_id": 1, "available": 100}])
+    assert r.status_code == 401
 
 
 def test_place_order_flow():
