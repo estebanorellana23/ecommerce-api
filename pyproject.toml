@@ -1,0 +1,16 @@
+[project]
+name = "ecommerce-api"
+version = "1.0.0"
+description = "Rediseño del E-Commerce API con SOLID + Repository/Factory/Observer — Proyecto Final AS1"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

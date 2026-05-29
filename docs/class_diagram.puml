@@ -1,0 +1,82 @@
+@startuml ECommerceAPI_ClassDiagram
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+package "Domain" {
+  class Product
+  class Order
+  class OrderItem
+  class StockRecord
+  class InventoryEvent
+  class Customer
+  class Cart
+  enum OrderStatus
+  Order "1" *-- "1..*" OrderItem
+  Order ..> OrderStatus
+  Order --> Customer
+}
+
+package "Repository Interfaces" {
+  interface IProductReader
+  interface IProductWriter
+  interface IProductRepository
+  interface IInventoryRepository
+  interface IOrderRepository
+  IProductRepository --|> IProductReader
+  IProductRepository --|> IProductWriter
+}
+
+package "Repository Implementations" {
+  class InMemoryProductRepository
+  class InMemoryInventoryRepository
+  InMemoryProductRepository ..|> IProductRepository
+  InMemoryInventoryRepository ..|> IInventoryRepository
+}
+
+package "Services" {
+  class ProductService
+  class OrderService
+  class InventoryService
+  ProductService --> IProductReader
+  OrderService --> IOrderRepository
+  OrderService --> IPaymentGateway
+  InventoryService --> IInventoryRepository
+  InventoryService --> InventorySubject
+}
+
+package "Payment Gateway (Factory + OCP)" {
+  interface IPaymentGateway
+  class VisaNetGateway
+  class PayPalGateway
+  class PaymentGatewayFactory
+  VisaNetGateway ..|> IPaymentGateway
+  PayPalGateway ..|> IPaymentGateway
+  PaymentGatewayFactory ..> IPaymentGateway : creates
+}
+
+package "Observer — Inventory Events" {
+  interface IInventoryObserver
+  class InventorySubject
+  class LowStockObserver
+  class InventoryAuditObserver
+  class CatalogCacheObserver
+  InventorySubject o-- IInventoryObserver
+  LowStockObserver ..|> IInventoryObserver
+  InventoryAuditObserver ..|> IInventoryObserver
+  CatalogCacheObserver ..|> IInventoryObserver
+  InventorySubject ..> InventoryEvent
+}
+
+package "Notification (Factory)" {
+  interface INotificationHandler
+  class EmailNotificationHandler
+  class PushNotificationHandler
+  class NotificationFactory
+  class LowStockAlertService
+  EmailNotificationHandler ..|> INotificationHandler
+  PushNotificationHandler ..|> INotificationHandler
+  NotificationFactory ..> INotificationHandler : creates
+  LowStockObserver --> LowStockAlertService
+  LowStockAlertService --> NotificationFactory
+}
+@enduml
