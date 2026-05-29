@@ -25,7 +25,7 @@ alertas, auditoría ni caché. La solución fue separar responsabilidades.
 ```
 app/
 ├── domain/          # Entidades de negocio puras (Product, Order, StockRecord, ...)
-├── repositories/    # Interfaces (puertos) + implementación en memoria
+├── repositories/    # Interfaces (puertos) + impl. en memoria (memory.py) y SQL (sql.py)
 ├── services/        # Lógica de negocio (Product, Order, Inventory, Alertas)
 ├── payments/        # Pasarelas de pago — patrón Factory + OCP
 ├── notifications/   # Canales de notificación — patrón Factory
@@ -63,11 +63,42 @@ uvicorn app.main:app --reload
 #    http://localhost:8000/docs
 ```
 
-### Con Docker
+### Backend de base de datos
+
+La app soporta dos backends de repositorios, seleccionables con `REPO_BACKEND`:
+
+| `REPO_BACKEND` | Almacenamiento | Uso |
+|----------------|----------------|-----|
+| `memory` (por defecto) | En memoria, datos demo | Desarrollo rápido y pruebas, sin instalar nada |
+| `sql` | SQLAlchemy → PostgreSQL / SQLite | Persistencia real |
+
+Ambos implementan **las mismas interfaces** de repositorio, así que la lógica de
+negocio no cambia al alternarlos (esto es el Principio de Sustitución de Liskov).
+
+```bash
+# Correr con PostgreSQL
+export REPO_BACKEND=sql
+export DATABASE_URL="postgresql+psycopg://ecommerce:ecommerce@localhost:5432/ecommerce"
+uvicorn app.main:app --reload
+
+# O con SQLite (cero setup, persiste en archivo)
+REPO_BACKEND=sql DATABASE_URL="sqlite:///./ecommerce.db" uvicorn app.main:app --reload
+```
+
+Al arrancar, la app crea las tablas (`create_all`) y siembra datos demo si el
+catálogo está vacío. En PostgreSQL, [`db/schema.sql`](db/schema.sql) agrega además
+los **triggers**, **constraints** e **índices GIN (pg_trgm)** documentados en la
+gobernanza de datos.
+
+### Con Docker (API + PostgreSQL)
 
 ```bash
 docker compose up --build
 ```
+
+Levanta PostgreSQL 16 (inicializado con `db/schema.sql`) y la API con
+`REPO_BACKEND=sql` conectada a la base. La API espera a que la BD esté lista
+(`healthcheck`).
 
 ---
 
