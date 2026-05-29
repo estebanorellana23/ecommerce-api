@@ -20,6 +20,11 @@ coverage.xml
 .env
 
 # Editor / OS
-.vscode/
 .idea/
 .DS_Store
+
+# VS Code: se versiona la config compartida del equipo, no la local
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
